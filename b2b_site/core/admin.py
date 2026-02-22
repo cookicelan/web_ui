@@ -15,6 +15,7 @@ class UserProfileInline(admin.StackedInline):
     model = UserProfile
     can_delete = False
     verbose_name_plural = '客户B2B配置 (地区/仓库/推荐)'
+    filter_horizontal = ('recommended_products',)
 
 # 重新注册 User Admin
 class UserAdmin(BaseUserAdmin):
@@ -104,7 +105,8 @@ class ProductAdmin(admin.ModelAdmin):
 
     # === 核心修改：导入逻辑 ===
     def process_excel(self, file, u_type):
-        df = pd.read_excel(file)
+        # 加上 engine='openpyxl' 参数
+        df = pd.read_excel(file, engine='openpyxl')
         df.columns = df.columns.str.strip()
         df = df.fillna('')
 
@@ -185,3 +187,4 @@ class OrderAdmin(admin.ModelAdmin):
 @admin.register(UserProfile)
 class ProfileAdmin(admin.ModelAdmin):
     list_display = ('user', 'phone')
+    filter_horizontal = ('recommended_products',)

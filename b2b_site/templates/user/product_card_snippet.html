@@ -1,23 +1,21 @@
 <div class="card">
     {% if p.image %}
-        <img src="{{ p.image.url }}" style="width:100%; height:150px; object-fit: cover;">
+        <img src="{{ p.image.url }}" alt="{{ p.name }}" style="width:100%; height:160px; object-fit:contain; border-radius:5px; margin-bottom: 10px;">
     {% else %}
-        <div style="width:100%; height:150px; background:#eee; line-height:150px; text-align:center;">No Image</div>
+        <div style="width:100%; height:160px; background:#f0f0f0; text-align:center; line-height:160px; color:#aaa; border-radius:5px; margin-bottom: 10px;">暂无图片</div>
     {% endif %}
 
-    <h3>{{ p.name }}</h3>
-    <p style="color:#666; font-size:0.9em;">{{ p.sku }}</p>
+    <h3 style="font-size: 1.1em; margin: 5px 0; height: 44px; overflow: hidden;">{{ p.name }}</h3>
+    <p style="color: #666; font-size: 0.9em; margin: 5px 0;">编码: {{ p.sku }}</p>
 
     {% if user.is_authenticated %}
-        <p class="price-tag">${{ p.price }}</p>
-        <p>库存: <strong>{{ p.visible_qty }}</strong></p>
+        <p style="margin: 5px 0;">当前可用库存: <span style="color:green; font-weight:bold;">{{ p.visible_qty }}</span></p>
 
-        <div style="background: #f8f9fa; padding: 5px;">
-            <label>Qty:</label>
-            <input type="number" name="qty_{{ p.id }}" value="0" min="0" style="width:60px;">
+        <div style="margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 10px;">
+            <label style="font-weight: bold; color: #d9534f;">采购数量: </label>
+            <input type="number" name="qty_{{ p.id }}" value="0" min="0" max="{{ p.visible_qty }}" style="width: 80px; padding: 5px; font-size: 16px; border: 1px solid #ccc; border-radius: 4px;">
         </div>
     {% else %}
-        <p>价格: <span class="blur-text">$$$$$</span> <a href="#" onclick="document.getElementById('loginModal').style.display='block'" style="font-size:0.8em">登录可见</a></p>
-        <p>库存: <span class="blur-text">99999</span></p>
+        <p class="blur-text" style="margin-top: 15px;">库存与下单功能登录后可见</p>
     {% endif %}
 </div>

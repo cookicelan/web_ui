@@ -5,7 +5,8 @@ from django.contrib.admin.views.decorators import staff_member_required # <--- �
 from django.http import JsonResponse          # <--- 【关键】缺的就是这一行，修复报错
 from django.core.mail import send_mail        # <--- 发邮件需要
 from django.conf import settings              # <--- 读取邮箱配置需要
-from .models import Product, Order, OrderItem, UserProfile
+from django.contrib.auth import login, logout, authenticate  # <--- 加上 authenticate
+from .models import Product, Order, OrderItem, UserProfile, IncomingStock, ProductStock
 
 
 # 1. 注册功能
@@ -84,19 +85,26 @@ def product_list(request):
                 # 这是一个跨表查询累加
                 visible_qty = sum(s.qty for s in p.stocks.all() if s.warehouse in wh_list)
         else:
-            visible_qty = 0  # 游客看不到数量，逻辑上算0，但在前端只是隐藏显示
+            # 必须用真实库存进行分类，否则会被全部分到缺货里
+            visible_qty = p.total_qty
 
         # 动态给对象绑定一个属性，方便前端显示
         p.visible_qty = visible_qty
 
         # 找交期 (如果没货)
+        # 找交期 (如果没货)
         if visible_qty <= 0:
             # 查 IncomingStock 表，找最近的一个交期
             incoming = IncomingStock.objects.filter(product=p).order_by('arrival_date').first()
-            p.next_arrival = incoming.arrival_date if incoming else "暂定 / TBD"
+
+            if incoming:
+                p.next_arrival = incoming.arrival_date
+                p.incoming_qty_display = incoming.qty  # 把在途的补货数量也抓出来
+            else:
+                p.next_arrival = "暂定 / TBD"
+                p.incoming_qty_display = 0  # 如果没查到在途表，数量就是 0
+
             final_out_stock.append(p)
-        else:
-            final_in_stock.append(p)
 
     context = {
         'recommended': user_recs if request.user.is_authenticated else products[:5],  # 游客默认显示前5个
@@ -125,11 +133,6 @@ def send_sms_notification(customer_name):
         print(f"=============================")
         print(f"模拟发送短信给 {phone}: {msg}")
         print(f"=============================")
-
-def product_list(request):
-    products = Product.objects.all()
-    # 现在的首页不需要处理 POST，只展示商品
-    return render(request, 'user/product_list.html', {'products': products})
 
 # --- 新增：结算预览页面 (点击“去结算”后跳出的页面) ---
 @require_POST
@@ -237,3 +240,25 @@ def confirm_order(request):
         print(f"邮件发送失败: {e}")
 
     return render(request, 'user/order_success.html')
+
+# --- 新增：自定义退出登录 ---
+def custom_logout(request):
+    logout(request)  # 清除用户的登录状态
+    return redirect('product_list')  # 退出后自动跳回商品首页
+
+# --- 新增：普通客户专属登录页面 ---
+def user_login_view(request):
+    if request.method == 'POST':
+        u = request.POST.get('username')
+        p = request.POST.get('password')
+        # authenticate 会去数据库核对账号密码，无论是不是管理员都能验证
+        user = authenticate(request, username=u, password=p)
+        if user is not None:
+            login(request, user)  # 验证成功，执行登录
+            return redirect('product_list')  # 登录后跳转到商品首页
+        else:
+            # 验证失败，返回错误信息
+            return render(request, 'user/login.html', {'error': '账号或密码不正确，请重试'})
+
+    # 如果是刚点进这个页面 (GET请求)，就显示登录框
+    return render(request, 'user/login.html')

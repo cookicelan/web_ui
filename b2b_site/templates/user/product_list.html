@@ -5,7 +5,7 @@
     <style>
         /* Tab 样式 */
         .tab-buttons { margin-bottom: 20px; text-align: center; }
-        .tab-btn { padding: 10px 20px; cursor: pointer; background: #eee; border: none; font-size: 16px; margin: 0 5px; }
+        .tab-btn { padding: 10px 20px; cursor: pointer; background: #eee; border: none; font-size: 16px; margin: 0 5px; border-radius: 5px; }
         .tab-btn.active { background: #007bff; color: white; font-weight: bold; }
         .tab-content { display: none; }
         .tab-content.active { display: flex; flex-wrap: wrap; justify-content: center;}
@@ -16,85 +16,114 @@
         .blur-text { filter: blur(4px); user-select: none; color: #999; } /* 模糊效果 */
 
         /* 登录弹窗样式 */
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); }
-        .modal-content { background-color: white; margin: 15% auto; padding: 30px; width: 400px; text-align: center; border-radius: 10px; }
-        .modal-btn { display: block; width: 80%; margin: 10px auto; padding: 10px; text-decoration: none; border-radius: 5px; }
+        .modal { position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); }
+        .modal-content { background-color: white; margin: 15% auto; padding: 30px; width: 400px; text-align: center; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        .modal-btn { display: block; width: 80%; margin: 15px auto; padding: 12px; text-decoration: none; border-radius: 5px; font-size: 16px; cursor: pointer; border: none; }
         .btn-login { background: #28a745; color: white; }
         .btn-register { background: #007bff; color: white; }
         .btn-skip { background: #6c757d; color: white; }
+
+        .modal-btn:hover { opacity: 0.9; }
     </style>
 </head>
 <body>
 
-    <div style="text-align: right; padding: 10px;">
+    <div style="text-align: right; padding: 10px 20px; background-color: #f8f9fa; border-bottom: 1px solid #ddd;">
         {% if user.is_authenticated %}
-            <span>欢迎, {{ user.username }} ({{ user.profile.country_suffix|default:"全球" }})</span>
-            <a href="/admin/logout/">退出</a>
+            <span style="font-weight: bold; margin-right: 15px;">欢迎您, {{ user.username }} ({{ user.profile.country_suffix|default:"全球" }})</span>
+            <a href="/logout/" style="color: red; text-decoration: none;">[ 退出登录 ]</a>
         {% else %}
-            <button onclick="document.getElementById('loginModal').style.display='block'">登录/注册</button>
+            <button onclick="document.getElementById('loginModal').style.display='block'" style="padding: 8px 15px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 4px;">登录 / 注册</button>
         {% endif %}
     </div>
 
-    {% if show_login_modal %}
-    <div id="loginModal" class="modal" style="display: block;">
+    <div id="loginModal" class="modal" style="display: {% if show_login_modal %}block{% else %}none{% endif %};">
         <div class="modal-content">
             <h2>欢迎光临 / Welcome</h2>
-            <p>请选择操作以继续查看商品</p>
+            <p style="color: #666; margin-bottom: 20px;">请选择操作以继续查看商品专属价格与交期</p>
 
-            <a href="/admin/login/?next=/" class="modal-btn btn-login">已有账号？去登录</a>
+            <a href="/login/" class="modal-btn btn-login">已有账号？去登录</a>
             <a href="/register/" class="modal-btn btn-register">新用户注册</a>
             <button onclick="document.getElementById('loginModal').style.display='none'" class="modal-btn btn-skip">暂时不登录 (游客模式)</button>
         </div>
     </div>
-    {% endif %}
 
-    <h1 style="text-align: center;">产品选购</h1>
+    <h1 style="text-align: center; margin-top: 20px;">产品选购</h1>
 
-    <div class="tab-buttons">
+<div class="tab-buttons">
         <button class="tab-btn active" onclick="openTab('rec')">🌟 推荐商品 (Recommended)</button>
         <button class="tab-btn" onclick="openTab('stock')">📦 有货商品 (In Stock)</button>
+        {% if user.is_authenticated %}
         <button class="tab-btn" onclick="openTab('nostock')">⏳ 缺货/交期 (Restocking)</button>
+        {% endif %}
     </div>
 
-    <div id="rec" class="tab-content active">
-        {% if not recommended %} <p>暂无推荐商品</p> {% endif %}
-        {% for p in recommended %}
-            {% include "user/product_card_snippet.html" with p=p %}
-        {% endfor %}
-    </div>
+    <form action="{% url 'checkout' %}" method="POST">
+        {% csrf_token %} <div id="rec" class="tab-content active">
+            {% if not recommended %} <p style="color: #999; margin-top: 20px;">暂无推荐商品</p> {% endif %}
+            {% for p in recommended %}
+                {% include "user/product_card_snippet.html" with p=p %}
+            {% endfor %}
+        </div>
 
-    <div id="stock" class="tab-content">
-        {% for p in in_stock %}
-            {% include "user/product_card_snippet.html" with p=p %}
-        {% endfor %}
-    </div>
+        <div id="stock" class="tab-content">
+            {% for p in in_stock %}
+                {% include "user/product_card_snippet.html" with p=p %}
+            {% endfor %}
+        </div>
 
-    <div id="nostock" class="tab-content">
-        {% for p in out_stock %}
-            <div class="card" style="background-color: #f9f9f9;">
-                <h3>{{ p.name }}</h3>
-                <p style="font-size:0.9em;">{{ p.sku }}</p>
-                <hr>
-                <p style="color: orange; font-weight: bold;">❌ 暂时缺货</p>
-                <p>
-                    <strong>预计到货:</strong>
-                    <span style="color: blue;">{{ p.next_arrival }}</span>
-                </p>
+        {% if user.is_authenticated %}
+        <div id="nostock" class="tab-content">
+            {% for p in out_stock %}
+                <div class="card" style="background-color: #f9f9f9;">
+                    <h3>{{ p.name }}</h3>
+                    <p style="font-size:0.9em; color: #555;">{{ p.sku }}</p>
+                    <hr>
+                    <p style="color: #d9534f; font-weight: bold;">❌ 暂时缺货</p>
+
+                    <div style="background-color: #e9ecef; padding: 10px; border-radius: 5px; margin-top: 10px;">
+                        <p style="margin: 5px 0;">
+                            <strong>预计到货:</strong>
+                            <span style="color: #007bff; font-weight: bold;">{{ p.next_arrival }}</span>
+                        </p>
+                        <p style="margin: 5px 0;">
+                            <strong>在途数量:</strong>
+                            <span style="color: #28a745; font-weight: bold;">{{ p.incoming_qty_display }}</span>
+                        </p>
+                    </div>
                 </div>
-        {% endfor %}
-    </div>
+            {% endfor %}
+        </div>
+        {% endif %}
 
+        {% if user.is_authenticated %}
+        <div style="position: fixed; bottom: 0; left: 0; width: 100%; background-color: white; border-top: 2px solid #ddd; padding: 15px 0; text-align: center; box-shadow: 0 -4px 10px rgba(0,0,0,0.1); z-index: 999;">
+            <button type="submit" style="background-color: #ff5722; color: white; border: none; padding: 12px 40px; font-size: 18px; font-weight: bold; border-radius: 30px; cursor: pointer;">
+                🛒 选好了，去结算 (Checkout)
+            </button>
+        </div>
+        <div style="height: 80px;"></div>
+        {% endif %}
+
+    </form>
     <script>
         function openTab(tabName) {
             var i, x, tablinks;
             x = document.getElementsByClassName("tab-content");
-            for (i = 0; i < x.length; i++) { x[i].className = "tab-content"; } // 隐藏所有
+            for (i = 0; i < x.length; i++) {
+                x[i].className = "tab-content"; // 隐藏所有
+            }
 
             tablinks = document.getElementsByClassName("tab-btn");
-            for (i = 0; i < tablinks.length; i++) { tablinks[i].className = "tab-btn"; } // 重置按钮
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = "tab-btn"; // 重置按钮
+            }
 
-            document.getElementById(tabName).className += " active"; // 显示当前
-            event.currentTarget.className += " active"; // 高亮按钮
+            var targetTab = document.getElementById(tabName);
+            if(targetTab) {
+                targetTab.className += " active"; // 显示选中的内容
+            }
+            event.currentTarget.className += " active"; // 高亮当前点击的按钮
         }
     </script>
 

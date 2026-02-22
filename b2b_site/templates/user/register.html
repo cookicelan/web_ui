@@ -8,6 +8,9 @@
         button { padding: 10px 30px; background: #007bff; color: white; border: none; cursor: pointer; }
     </style>
 </head>
+{% if error %}
+    <p style="color: red; font-weight: bold; text-align: center;">❌ {{ error }}</p>
+{% endif %}
 <body>
     <h2>新客户注册 / Register</h2>
     <form method="POST">

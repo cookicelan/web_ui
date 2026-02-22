@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>客户登录 - B2B系统</title>
+    <style>
+        body { font-family: sans-serif; background: #f4f4f4; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .login-box { background: white; padding: 40px 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 320px; text-align: center; }
+        input { width: 90%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; box-sizing: border-box; }
+        button { width: 90%; padding: 12px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin-top: 10px; }
+        button:hover { background: #218838; }
+        a { text-decoration: none; color: #007bff; font-size: 14px; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="login-box">
+        <h2 style="margin-bottom: 20px; color: #333;">客户登录 / Login</h2>
+
+        {% if error %}
+            <p style="color: red; font-weight: bold; font-size: 14px;">❌ {{ error }}</p>
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+            <input type="text" name="username" placeholder="请输入用户名" required>
+            <input type="password" name="password" placeholder="请输入密码" required>
+            <button type="submit">立即登录</button>
+        </form>
+
+        <div style="margin-top: 25px; display: flex; justify-content: space-between; padding: 0 15px;">
+            <a href="/register/">新用户注册</a>
+            <a href="/">返回首页 (游客)</a>
+        </div>
+    </div>
+</body>
+</html>
