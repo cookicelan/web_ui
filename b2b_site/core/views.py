@@ -92,7 +92,6 @@ def product_list(request):
         p.visible_qty = visible_qty
 
         # 找交期 (如果没货)
-        # 找交期 (如果没货)
         if visible_qty <= 0:
             # 查 IncomingStock 表，找最近的一个交期
             incoming = IncomingStock.objects.filter(product=p).order_by('arrival_date').first()
@@ -105,6 +104,10 @@ def product_list(request):
                 p.incoming_qty_display = 0  # 如果没查到在途表，数量就是 0
 
             final_out_stock.append(p)
+        else:
+            # === 【关键修复】===
+            # 如果库存大于0，必须把它加进有货的列表里！
+            final_in_stock.append(p)
 
     context = {
         'recommended': user_recs if request.user.is_authenticated else products[:5],  # 游客默认显示前5个

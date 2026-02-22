@@ -36,12 +36,15 @@ nohup python3 manage.py runserver 0.0.0.0:8000 > mysite.log 2>&1 &
 
 如果想要清理正在运行的程序，输入这串代码查找正在运行的实例
 ps -ef | grep python
-然后将后续带着 pychon3 manage.py的ID记住
-然后，使用kill -9 ID，清理实例
+关闭进程
+pkill -f runserver
 最后重新激活网站
+nohup python3 manage.py runserver 0.0.0.0:8000 > mysite.log 2>&1 &
 
 创建管理员
 python manage.py createsuperuser
+
+网址：http://47.82.224.133:8000/ 
 
 本地运行代码
 PS C:\Users\op346\Desktop\个人程序\金成\b2b_site> cd C:\Users\op346\Desktop\个人程序\金成
