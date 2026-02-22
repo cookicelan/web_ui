@@ -1,0 +1,33 @@
+2026.1.8     智能下单系统V1版本
+先在本地cmd界面运行这串代码，生成密钥，然后部署到服务器
+ssh-keygen -t ed25519 一直按回车就行
+密钥地址通常在window：C:\Users\你的用户名\.ssh\id_ed25519；Mac/Linux：~/.ssh/id_ed25519
+生成密钥之后，在网页上进入阿里云服务器控制平台→ 「密钥对」→ 「导入密钥对」→ 粘贴公钥内容
+点击保存，重启服务器
+
+运行这串代码进入服务器
+ssh -i "C:\Users\op346\.ssh\id_ed25519" root@120.79.98.19
+
+如果能成功进入，那就没有问题了
+
+将本地修改的文件上传至服务器
+使用本地cmd打开就行，不需要进入服务器端
+scp -r "C:\Users\op346\Desktop\金成\b2b_site" root@120.79.98.19:/root/
+
+服务器需要具备以下环境，请在服务器端依次运行这些代码
+apt update
+yum update -y
+yum install python3 -y
+pip3 install django pandas openpyxl pillow
+在服务器端，先进入存放程序的地址
+cd /root/b2b_site
+然后，运行该代码，激活网站
+nohup python3 manage.py runserver 0.0.0.0:8000 > mysite.log 2>&1 &
+重启服务器，需要先查找在运行的实例
+ps -ef | grep python
+然后将后续带着 pychon3 manage.py的ID记住
+然后，使用kill -9 ID，清理实例
+最后重新激活网站
+
+创建管理员
+python manage.py createsuperuser

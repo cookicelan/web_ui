@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>确认订单 / Checkout</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .order-summary { background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        .submit-btn { width: 100%; padding: 15px; background: #007bff; color: white; border: none; border-radius: 5px; font-size: 18px; cursor: pointer; }
+        table { width: 100%; border-collapse: collapse; }
+        td { padding: 8px; border-bottom: 1px solid #eee; }
+    </style>
+</head>
+<body>
+
+    <h2>订单确认 / Order Confirmation</h2>
+
+    <div class="order-summary">
+        <h3>已选商品 (Selected Items)</h3>
+        <table>
+            {% for item in items %}
+            <tr>
+                <td style="padding: 10px;">
+                    <div style="font-weight: bold; font-size: 1.1em;">{{ item.product.sku }}</div>
+                    <div style="color: #666; font-size: 0.85em;">{{ item.product.name }}</div>
+                </td>
+                <td style="font-weight: bold;">x {{ item.qty }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <form action="/confirm-order/" method="POST">
+        {% csrf_token %}
+
+        {% for item in items %}
+            <input type="hidden" name="final_qty_{{ item.product.id }}" value="{{ item.qty }}">
+        {% endfor %}
+
+        <div class="form-group">
+            <label>您的姓名 / Your Name *</label>
+            <input type="text" name="name" required placeholder="请输入姓名">
+        </div>
+
+        <div class="form-group">
+            <label>联系电话 / Phone Number *</label>
+            <input type="text" name="phone" required placeholder="方便我们联系您">
+        </div>
+
+        <div class="form-group">
+            <label>电子邮箱 / Email Address</label>
+            <input type="email" name="email" placeholder="接收订单通知 (可选)">
+        </div>
+
+        <button type="submit" class="submit-btn">确认下单 / Confirm Order</button>
+    </form>
+
+</body>
+</html>

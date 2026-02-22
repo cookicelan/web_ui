@@ -1,0 +1,50 @@
+{% extends "admin/base.html" %}
+
+{% block title %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block branding %}
+<h1 id="site-name"><a href="{% url 'admin:index' %}">{{ site_header|default:_('Django administration') }}</a></h1>
+{% endblock %}
+
+{% block nav-global %}
+<div style="float: right; margin-top: 8px; margin-right: 20px; position: relative;">
+
+    <a href="/admin/core/order/?status__exact=New" title="点击查看新订单" style="text-decoration: none; position: relative;">
+        <span style="font-size: 20px; cursor: pointer;">🔔</span>
+
+        <span id="order-badge" style="display: none; background-color: red; color: white; border-radius: 50%; padding: 2px 6px; font-size: 10px; font-weight: bold; position: absolute; top: -8px; right: -5px;">0</span>
+    </a>
+
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+
+        function checkNewOrders() {
+            // 访问我们刚才写的接口
+            fetch('/api/admin/check-orders/')
+                .then(response => response.json())
+                .then(data => {
+                    const badge = document.getElementById('order-badge');
+                    if (data.count > 0) {
+                        // 如果有新订单：显示红点，更新数字
+                        badge.style.display = 'inline-block';
+                        badge.innerText = data.count;
+
+                        // 可选：如果要很骚气地响一声，可以在这里加 audio.play()
+                    } else {
+                        // 没有新订单：隐藏红点
+                        badge.style.display = 'none';
+                    }
+                })
+                .catch(err => console.error("查询订单失败:", err));
+        }
+
+        // 页面加载完立即查一次
+        checkNewOrders();
+
+        // 之后每 5 秒自动查一次 (轮询)
+        setInterval(checkNewOrders, 5000);
+    });
+</script>
+{% endblock %}

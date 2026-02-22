@@ -1,0 +1,23 @@
+<div class="card">
+    {% if p.image %}
+        <img src="{{ p.image.url }}" style="width:100%; height:150px; object-fit: cover;">
+    {% else %}
+        <div style="width:100%; height:150px; background:#eee; line-height:150px; text-align:center;">No Image</div>
+    {% endif %}
+
+    <h3>{{ p.name }}</h3>
+    <p style="color:#666; font-size:0.9em;">{{ p.sku }}</p>
+
+    {% if user.is_authenticated %}
+        <p class="price-tag">${{ p.price }}</p>
+        <p>库存: <strong>{{ p.visible_qty }}</strong></p>
+
+        <div style="background: #f8f9fa; padding: 5px;">
+            <label>Qty:</label>
+            <input type="number" name="qty_{{ p.id }}" value="0" min="0" style="width:60px;">
+        </div>
+    {% else %}
+        <p>价格: <span class="blur-text">$$$$$</span> <a href="#" onclick="document.getElementById('loginModal').style.display='block'" style="font-size:0.8em">登录可见</a></p>
+        <p>库存: <span class="blur-text">99999</span></p>
+    {% endif %}
+</div>

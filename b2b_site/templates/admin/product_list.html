@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Product List</title>
+    <style>
+        .card { border:1px solid #ddd; padding:15px; margin:10px; display:inline-block; width: 250px; vertical-align:top;}
+        .btn { background: #007bff; color: white; padding: 5px 10px; text-decoration: none;}
+    </style>
+</head>
+<body>
+    <h1>Our Products</h1>
+    {% for p in products %}
+    <div class="card">
+        <h3>{{ p.name }}</h3>
+        <p>Model: {{ p.sku }}</p>
+        <p>Stock: {{ p.qty }}</p>
+
+        {% if user.is_authenticated %}
+            <form action="/place-order/" method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="product_id" value="{{ p.id }}">
+                Qty: <input type="number" name="quantity" value="1" style="width:50px">
+                <button type="submit" class="btn">Order Now</button>
+            </form>
+        {% else %}
+            <a href="/admin/">Login to Order</a>
+        {% endif %}
+    </div>
+    {% endfor %}
+</body>
+</html>

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>注册账号</title>
+    <style>
+        body { font-family: sans-serif; padding: 50px; text-align: center; }
+        input { padding: 10px; margin: 10px; width: 300px; display: block; margin: 10px auto; }
+        button { padding: 10px 30px; background: #007bff; color: white; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h2>新客户注册 / Register</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <input type="text" name="username" placeholder="用户名 (Username)" required>
+        <input type="password" name="password" placeholder="密码 (Password)" required>
+        <input type="text" name="name" placeholder="您的姓名 (Full Name)" required>
+        <input type="email" name="email" placeholder="电子邮箱 (Email)" required>
+        <input type="text" name="phone" placeholder="联系电话 (Phone)" required>
+        <input type="text" name="country" placeholder="地区代码 (例如: TW, UK, US) 用于匹配商品" required>
+
+        <p style="color:red; font-size:12px;">注：地区代码将决定您能看到哪些特定规格的产品</p>
+
+        <button type="submit">提交注册</button>
+    </form>
+    <a href="/">返回首页</a>
+</body>
+</html>
